@@ -9,8 +9,8 @@ class GCN(nn.Module):
         super(GCN, self).__init__()
 
         self.gc1 = GraphConvolution(nfeat, nhid)
-        # self.gc2 = GraphConvolution(nhid, nclass)#这里如果用MSEloss或者BCEloss要改成1，因为后面要过sigmoid
-        self.gc2 = GraphConvolution(nhid, 1)#这里如果用MSEloss或者BCEloss要改成1，因为后面要过sigmoid
+        self.gc2 = GraphConvolution(nhid, nclass)#这里如果用MSEloss或者BCEloss要改成1，因为后面要过sigmoid
+        # self.gc2 = GraphConvolution(nhid, 1)#这里如果用MSEloss或者BCEloss要改成1，因为后面要过sigmoid
         self.dropout = dropout
 
     def forward(self, x, adj):

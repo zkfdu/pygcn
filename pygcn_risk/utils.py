@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 import torch.nn.functional as F
-
+from sklearn.metrics import mean_squared_error,roc_auc_score,confusion_matrix
 
 def encode_onehot(labels):
     classes = set(labels)
@@ -62,8 +62,8 @@ def load_data(path="/disk4/zk/charmsftp/ali_attention/pygcn/data/risk/", dataset
     idx_features_labels = np.genfromtxt("{}{}.content".format(path, dataset),
                                         dtype=np.dtype(str),delimiter=',')
     features = sp.csr_matrix(idx_features_labels[:, 1:-1], dtype=np.float32)
-    # labels = encode_onehot(idx_features_labels[:, -1].astype(np.float16).astype(np.int32))
-    labels = idx_features_labels[:, -1].astype(np.float16).astype(np.int32)
+    labels = encode_onehot(idx_features_labels[:, -1].astype(np.float16).astype(np.int32))
+    # labels = idx_features_labels[:, -1].astype(np.float16).astype(np.int32)
 
     # build graph
     idx = np.array(idx_features_labels[:, 0])
@@ -114,11 +114,16 @@ def accuracy_basic(output, labels):
     correct = correct.sum()
     return correct / len(labels)
 
-def accuracy(output, labels):
+def accuracy(output, labels):#计算acc
     # output=F.sigmoid(output)
-    e=output.max(1)[0]
-    f=output.max(1)[1]
-    preds = output.max(1)[1].type_as(labels)
+    
+    # e=output.max(1)[0]
+    # f=output.max(1)[1]
+    g=output[:,1]>0.44
+    # if output[:1]
+    labels=labels.max(1)[1]
+    # preds = output.max(1)[1].type_as(labels)
+    preds = g.type_as(labels)
     correct = preds.eq(labels).double()
     correct = correct.sum()
     return correct / len(labels)
@@ -131,3 +136,36 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     values = torch.from_numpy(sparse_mx.data)
     shape = torch.Size(sparse_mx.shape)
     return torch.sparse.FloatTensor(indices, values, shape)
+
+def evaluate_risk_preds(preds, labels, indices, theta):
+    '''
+    train_val_loss, train_val_acc, train_val_recall, train_val_disturb = evaluate_risk_preds(preds, [y_train, y_val], [idx_train, idx_val], theta)
+    '''
+
+    preds=preds[:,1]
+    # for i in labels:
+    #     i=i.max(1)[1]
+    # preds = g.type_as(labels)
+
+    split_loss = list()
+    split_auc = list()
+    split_acc = list()
+    split_recall = list()
+    split_disturb = list()
+
+    for y_split, idx_split in zip(labels, indices):
+        y_split=y_split.max(1)[1]
+        # y_true, y_pred = y_split[idx_split], preds[idx_split]
+        y_true, y_pred = y_split[idx_split].flatten().cpu().detach().numpy(), preds[idx_split].flatten().cpu().detach().numpy()
+        split_loss.append(mean_squared_error(y_true, y_pred))
+        split_auc.append(roc_auc_score(y_true, y_pred))
+        y_pred = np.where(y_pred >= theta, 1, 0)
+        # print(y_true.shape, y_pred.shape, y_true.dtype, y_pred.dtype)
+        # print(np.sum(y_pred), np.sum(y_true))
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+        split_acc.append((tn+tp)/(tn+tp+fp+fn))
+        split_recall.append(tp/(tp+fn))
+        split_disturb.append(fp/(tn+fp))
+
+
+    return split_loss, split_acc, split_recall, split_disturb, split_auc
