@@ -45,7 +45,8 @@ adj, features, labels, idx_train, idx_val, idx_test = load_data()
 # Model and optimizer
 model = GCN(nfeat=features.shape[1],
             nhid=args.hidden,
-            nclass=labels.max().item() + 1,
+            # nclass=labels.max().item() + 1,
+            nclass=2,
             dropout=args.dropout)
 optimizer = optim.Adam(model.parameters(),
                        lr=args.lr, weight_decay=args.weight_decay)
@@ -59,14 +60,21 @@ if args.cuda:
     idx_val = idx_val.cuda()
     idx_test = idx_test.cuda()
 
-
+# loss_op = torch.nn.CrossEntropyLoss(weight=torch.Tensor([10,1]).cuda())
+# loss_op = torch.nn.BCELoss(weight=torch.Tensor([10,1]).cuda())
+# loss_op = torch.nn.CrossEntropyLoss()
+loss_op = torch.nn.MSELoss()
 def train(epoch):
     t = time.time()
     model.train()
     optimizer.zero_grad()
     output = model(features, adj)
-    # a=output[idx_train]
-    loss_train = F.nll_loss(output[idx_train], labels[idx_train])
+    # output = model(features, adj).view(-1)#这里如果要用二分类那种，如bceloss或MSEloss,model中最后返回1个列向量，需要转成行向量
+    # loss_train = F.nll_loss(output[idx_train], labels[idx_train])
+    a=output[idx_train]
+    b=labels[idx_train]
+    # loss_train = F.binary_cross_entropy(output[idx_train],labels[idx_train])
+    loss_train = loss_op(output[idx_train], labels[idx_train])
     acc_train = accuracy(output[idx_train], labels[idx_train])
     loss_train.backward()
     optimizer.step()
@@ -77,7 +85,9 @@ def train(epoch):
         model.eval()
         output = model(features, adj)
 
-    loss_val = F.nll_loss(output[idx_val], labels[idx_val])
+    loss_val = loss_op(output[idx_val], labels[idx_val])
+    c=output[idx_val]
+    d=labels[idx_val]
     acc_val = accuracy(output[idx_val], labels[idx_val])
     print('Epoch: {:04d}'.format(epoch+1),
           'loss_train: {:.4f}'.format(loss_train.item()),
@@ -90,7 +100,9 @@ def train(epoch):
 def test():
     model.eval()
     output = model(features, adj)
-    loss_test = F.nll_loss(output[idx_test], labels[idx_test])
+    # loss_test = F.nll_loss(output[idx_test], labels[idx_test])
+    # loss_test = F.binary_cross_entropy_with_logits(output[idx_test], labels[idx_test])
+    loss_test = loss_op(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
