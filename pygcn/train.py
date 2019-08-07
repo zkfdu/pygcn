@@ -9,9 +9,10 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pygcn.utils import load_data, accuracy
-from pygcn.models import GCN
-
+# from pygcn.utils import load_data, accuracy
+# from pygcn.models import GCN
+from utils import load_data, accuracy
+from models import GCN
 # Training settings
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-cuda', action='store_true', default=False,

@@ -12,7 +12,8 @@ def encode_onehot(labels):
     return labels_onehot
 
 
-def load_data(path="../data/cora/", dataset="cora"):
+# def load_data(path="../data/cora/", dataset="cora"):
+def load_data(path="/disk4/zk/charmsftp/ali_attention/pygcn/data/cora/", dataset="cora"):
     """Load citation network dataset (cora only for now)"""
     print('Loading {} dataset...'.format(dataset))
 
