@@ -21,7 +21,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--fastmode', action='store_true', default=False,
                     help='Validate during training pass.')
 parser.add_argument('--seed', type=int, default=42, help='Random seed.')
-parser.add_argument('--epochs', type=int, default=201,
+parser.add_argument('--epochs', type=int, default=1001,
                     help='Number of epochs to train.')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Initial learning rate.')
@@ -77,7 +77,7 @@ def train(epoch):
     # loss_train = F.binary_cross_entropy(output[idx_train],labels[idx_train])
     loss_train = loss_op(output[idx_train], labels[idx_train])
     acc_train = accuracy(output[idx_train], labels[idx_train])
-    split_loss, split_acc, split_recall, split_disturb, split_auc=evaluate_risk_preds(output, [labels], [idx_train], 0.3)
+    split_loss, split_acc, split_recall, split_disturb, split_auc=evaluate_risk_preds(output, [labels], [idx_train], 0.43)
     loss_train.backward()
     optimizer.step()
 
@@ -100,7 +100,7 @@ def train(epoch):
           'split_loss:{:.4f}'.format(split_loss[0]),
           'split_acc:{:.4f}'.format(split_acc[0]),
           'split_recall:{:.4f}'.format(split_recall[0]),
-          'split_disturb:{:.4f}'.format(split_disturb[0]),
+          'split_disturb:{:.7f}'.format(split_disturb[0]),
           'split_auc:{:.4f}'.format(split_auc[0]),
 
           )
@@ -113,10 +113,17 @@ def test():
     # loss_test = F.binary_cross_entropy_with_logits(output[idx_test], labels[idx_test])
     loss_test = loss_op(output[idx_test], labels[idx_test])
     acc_test = accuracy(output[idx_test], labels[idx_test])
+    split_loss, split_acc, split_recall, split_disturb, split_auc=evaluate_risk_preds(output, [labels], [idx_test], 0.5)
+
     print("Test set results:",
           "loss= {:.4f}".format(loss_test.item()),
-          "accuracy= {:.4f}".format(acc_test.item()))
-
+          "accuracy= {:.4f}".format(acc_test.item()),
+          'split_loss:{:.4f}'.format(split_loss[0]),
+          'split_acc:{:.4f}'.format(split_acc[0]),
+          'split_recall:{:.4f}'.format(split_recall[0]),
+          'split_disturb:{:.7f}'.format(split_disturb[0]),
+          'split_auc:{:.4f}'.format(split_auc[0]),
+    )
 
 # Train model
 t_total = time.time()
@@ -131,6 +138,25 @@ test()
 
 """
 1000轮
+Epoch: 0464 loss_train: 2.9910 acc_train: 0.9933 loss_val: 10.3008 acc_val: 0.9400 time: 0.0151s split_loss:0.0170 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9963
+Epoch: 0465 loss_train: 2.7419 acc_train: 0.9800 loss_val: 10.3219 acc_val: 0.9400 time: 0.0152s split_loss:0.0170 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9979
+Epoch: 0466 loss_train: 3.5762 acc_train: 0.9800 loss_val: 10.3641 acc_val: 0.9400 time: 0.0155s split_loss:0.0224 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9937
+Epoch: 0467 loss_train: 3.5755 acc_train: 0.9600 loss_val: 10.3733 acc_val: 0.9400 time: 0.0156s split_loss:0.0259 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9984
+Epoch: 0468 loss_train: 3.1034 acc_train: 0.9800 loss_val: 10.3338 acc_val: 0.9400 time: 0.0157s split_loss:0.0195 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9953
+Epoch: 0469 loss_train: 3.3695 acc_train: 0.9733 loss_val: 10.2372 acc_val: 0.9400 time: 0.0154s split_loss:0.0218 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9958
+Epoch: 0470 loss_train: 2.7773 acc_train: 0.9867 loss_val: 10.1327 acc_val: 0.9400 time: 0.0157s split_loss:0.0170 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9979
+Epoch: 0471 loss_train: 3.3020 acc_train: 0.9667 loss_val: 10.0153 acc_val: 0.9400 time: 0.0159s split_loss:0.0223 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9979
+Epoch: 0472 loss_train: 2.6511 acc_train: 0.9800 loss_val: 9.9040 acc_val: 0.9400 time: 0.0183s split_loss:0.0164 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9995
+Epoch: 0473 loss_train: 2.7184 acc_train: 0.9867 loss_val: 9.8553 acc_val: 0.9400 time: 0.0183s split_loss:0.0150 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9979
+Epoch: 0474 loss_train: 3.7421 acc_train: 0.9600 loss_val: 9.8260 acc_val: 0.9400 time: 0.0159s split_loss:0.0253 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9953
+Epoch: 0475 loss_train: 3.3769 acc_train: 0.9733 loss_val: 9.8052 acc_val: 0.9400 time: 0.0148s split_loss:0.0224 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9968
+Epoch: 0476 loss_train: 3.2230 acc_train: 0.9800 loss_val: 9.8282 acc_val: 0.9400 time: 0.0149s split_loss:0.0193 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9937
+Epoch: 0477 loss_train: 3.4339 acc_train: 0.9667 loss_val: 9.8948 acc_val: 0.9400 time: 0.0149s split_loss:0.0220 split_acc:0.9867 split_recall:0.9286 split_disturb:0.0074 split_auc:0.9953
+Epoch: 0478 loss_train: 3.4260 acc_train: 0.9733 loss_val: 9.9392 acc_val: 0.9400 time: 0.0149s split_loss:0.0226 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:0.9979
+Epoch: 0479 loss_train: 2.4401 acc_train: 0.9933 loss_val: 10.0039 acc_val: 0.9400 time: 0.0149s split_loss:0.0128 split_acc:0.9933 split_recall:0.9286 split_disturb:0.0000 split_auc:1.0000
+
+
+
 Epoch: 0942 loss_train: 1.3122 acc_train: 1.0000 loss_val: 9.4256 acc_val: 0.9300 time: 0.0163s split_loss:0.0099 split_acc:1.0000 split_recall:1.0000 split_disturb:0.0000 split_auc:1.0000
 Epoch: 0943 loss_train: 1.2273 acc_train: 1.0000 loss_val: 9.5327 acc_val: 0.9300 time: 0.0266s split_loss:0.0085 split_acc:0.9933 split_recall:1.0000 split_disturb:0.0074 split_auc:1.0000
 Epoch: 0944 loss_train: 1.1859 acc_train: 0.9933 loss_val: 9.6120 acc_val: 0.9300 time: 0.0199s split_loss:0.0084 split_acc:1.0000 split_recall:1.0000 split_disturb:0.0000 split_auc:1.0000
@@ -191,5 +217,13 @@ Epoch: 0998 loss_train: 1.0499 acc_train: 1.0000 loss_val: 9.5681 acc_val: 0.930
 Epoch: 0999 loss_train: 1.0005 acc_train: 1.0000 loss_val: 9.6519 acc_val: 0.9300 time: 0.0237s split_loss:0.0079 split_acc:1.0000 split_recall:1.0000 split_disturb:0.0000 split_auc:1.0000
 Epoch: 1000 loss_train: 1.2995 acc_train: 1.0000 loss_val: 9.7478 acc_val: 0.9300 time: 0.0235s split_loss:0.0104 split_acc:1.0000 split_recall:1.0000 split_disturb:0.0000 split_auc:1.0000
 Optimization Finished!
+
+
+Optimization Finished!
+Total time elapsed: 22.1039s
+Test set results: loss= 6.2811 accuracy= 0.9700 split_loss:0.0284 split_acc:0.9700 split_recall:0.6364 split_disturb:0.0105820 split_auc:0.9293
+
+
+
 Total time elapsed: 23.7986s
 Test set results: loss= 6.2794 accuracy= 0.9700"""
